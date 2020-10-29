@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    ports:
+      - 3306:3306
+    volumes:
+      - ./.docker/mysql/config/mysql-docker.cnf:/etc/mysql/conf.d/mysql-docker.cnf:ro
+      - ./.docker/mysql/config/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - ./.docker/mysql/data/:/var/lib/mysql:rw
+      - ./.docker/mysql/log/:/var/log/mysql:rw
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  apache:
+    build: ./.docker/apache
+    ports:
+      - 8080:80
+    volumes:
+      - ./public:/var/www/html/public:ro
+      - ./.docker/apache/config/vhosts.conf:/etc/apache2/sites-enabled/vhosts.conf:ro
+    depends_on:
+      - php
+  php:
+    build:
+      context: .
+      dockerfile: ./.docker/php/Dockerfile
+    environment:
+      APP_ENV: ${APP_ENV}
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+    volumes:
+      - .:/var/www/html:rw
+      - ./.docker/php/logs:/app/var/logs:rw
+    depends_on:
+      - mysql
