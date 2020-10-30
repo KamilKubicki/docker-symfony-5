@@ -15,8 +15,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
     ln -s $(composer config --global home) /root/composer
 ENV PATH=$PATH:/root/composer/vendor/bin COMPOSER_ALLOW_SUPERUSER=1
 
-#This part was skipped for the tutorial
-#ADD php.ini /etc/php/conf.d/
+COPY .docker/php/config/php.ini /usr/local/etc/php/php.ini
 
 WORKDIR /var/www/html
 
